@@ -2,15 +2,15 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
 export default function QuizApp() {
-  const [started, setStarted] = useState(false);
   const [registered, setRegistered] = useState(false);
+  const [started, setStarted] = useState(false);
   const [username, setUsername] = useState(localStorage.getItem("username") || "");
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState({});
   const [score, setScore] = useState(null);
-  const [timeLeft, setTimeLeft] = useState(3600); // 1 hour = 3600 sec
+  const [timeLeft, setTimeLeft] = useState(3600);
 
-  // ಡೆಮೋ ಪ್ರಶ್ನೆಗಳು
+  // ✅ ಪ್ರಶ್ನೆಗಳ ಡೇಟಾ
   const questions = [
     {
       q: "ವಿಜಯನಗರ ಸಾಮ್ರಾಜ್ಯವನ್ನು ಯಾರು ಸ್ಥಾಪಿಸಿದರು?",
@@ -29,17 +29,17 @@ export default function QuizApp() {
     },
   ];
 
-  // ಟೈಮರ್ ಲಾಜಿಕ್
+  // ✅ ಟೈಮರ್
   useEffect(() => {
-    if (!started || score !== null || timeLeft <= 0) return;
+    if (!started || score !== null) return;
     const timer = setInterval(() => setTimeLeft((t) => t - 1), 1000);
     return () => clearInterval(timer);
-  }, [started, score, timeLeft]);
+  }, [started, score]);
 
-  // ಉತ್ತರ ಕ್ಲಿಕ್
+  // ✅ ಉತ್ತರ ಆಯ್ಕೆ
   const handleOption = (opt) => setAnswers({ ...answers, [current]: opt });
 
-  // ಫಲಿತಾಂಶ ಲೆಕ್ಕ
+  // ✅ ಫಲಿತಾಂಶ
   const handleSubmit = () => {
     let sc = 0;
     questions.forEach((q, i) => {
@@ -50,121 +50,123 @@ export default function QuizApp() {
 
   const percent = score !== null ? Math.round((score / questions.length) * 100) : 0;
 
+  // ✅ ನೋಂದಣಿ ಭಾಗ
+  if (!registered) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-blue-700 to-blue-900 text-white flex flex-col justify-center items-center text-center">
+        <h1 className="text-5xl font-bold mb-4">AJAY KUMAR QUESTION BANK</h1>
+        <h2 className="text-2xl mb-6">ಅಜಯ್ ಕುಮಾರ್ ಪ್ರಶ್ನೆ ಬ್ಯಾಂಕ್</h2>
+
+        <input
+          type="text"
+          placeholder="Enter your name / ನಿಮ್ಮ ಹೆಸರು"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          className="text-black px-4 py-2 rounded-lg mb-4 w-64 text-center"
+        />
+        <button
+          onClick={() => {
+            if (username.trim() !== "") {
+              localStorage.setItem("username", username);
+              setRegistered(true);
+              setStarted(true); // ✅ ನೋಂದಣಿ ಆಗುತ್ತಿದ್ದಂತೆಯೇ ಕ್ವಿಜ್ ಪ್ರಾರಂಭ!
+            }
+          }}
+          className="bg-green-500 text-black px-6 py-3 rounded-lg text-xl hover:bg-green-400 transition-all"
+        >
+          Register & Start Quiz
+        </button>
+      </div>
+    );
+  }
+
+  // ✅ ಫಲಿತಾಂಶ ಸ್ಕ್ರೀನ್
+  if (score !== null) {
+    return (
+      <div className="min-h-screen bg-blue-900 text-white flex flex-col justify-center items-center text-center p-6">
+        <h2 className="text-4xl mb-4">Result / ಫಲಿತಾಂಶ</h2>
+        <p className="text-xl mb-2">Name: {username}</p>
+        <p className="text-xl mb-2">
+          Marks: {score} / {questions.length}
+        </p>
+        <p className="text-xl mb-2">Percentage: {percent}%</p>
+        {percent >= 50 ? (
+          <p className="text-green-400 text-2xl font-bold">
+            You are doing well! ನೀವು ಓಡುತ್ತಿದ್ದೀರಿ! 🎉
+          </p>
+        ) : (
+          <p className="text-red-400 text-2xl font-bold">
+            You are not studying well 😢 ನೀವು ಓದುತ್ತಿಲ್ಲ!
+          </p>
+        )}
+        <p className="mt-4 text-lg">ಧನ್ಯವಾದಗಳು / Thank you!</p>
+      </div>
+    );
+  }
+
+  // ✅ ಕ್ವಿಜ್ ಪೇಜ್
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-700 to-blue-900 text-white flex flex-col items-center p-6">
-      {!registered ? (
-        // 📍 Registration Screen
-        <div className="flex flex-col justify-center items-center h-screen text-center">
-          <h1 className="text-5xl font-bold mb-4">AJAY KUMAR QUESTION BANK</h1>
-          <h2 className="text-2xl mb-6">ಅಜಯ್ ಕುಮಾರ್ ಪ್ರಶ್ನೆ ಬ್ಯಾಂಕ್</h2>
-          <input
-            type="text"
-            placeholder="Enter your name / ನಿಮ್ಮ ಹೆಸರು"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="text-black px-4 py-2 rounded-lg mb-4 w-64 text-center"
-          />
-          <button
-            onClick={() => {
-              if (username.trim() !== "") {
-                localStorage.setItem("username", username);
-                setRegistered(true);
-              }
-            }}
-            className="bg-green-500 text-black px-6 py-3 rounded-lg text-xl hover:bg-green-400 transition-all"
-          >
-            Register
-          </button>
-        </div>
-      ) : !started ? (
-        // 📍 Start Page
-        <div className="flex flex-col items-center justify-center h-screen">
-          <h1 className="text-4xl font-bold mb-6">Welcome, {username} 👋</h1>
-          <motion.div
-            className="bg-yellow-400 text-black px-4 py-2 rounded mb-6 text-lg font-semibold overflow-hidden whitespace-nowrap w-full"
-            animate={{ x: ["100%", "-100%"] }}
-            transition={{ repeat: Infinity, duration: 10, ease: "linear" }}
-          >
-            ⚡ ಮಿನಿಮಮ್ 50 ಪ್ರಶ್ನೆಗಳಿಗೆ ಉತ್ತರ ಮಾಡಿದರೆ ನೀವು ಚೆನ್ನಾಗಿ ಓದುತ್ತೀರಿ ಎಂದರ್ಥ ⚡
-          </motion.div>
-          <button
-            onClick={() => setStarted(true)}
-            className="bg-green-500 text-black px-8 py-4 rounded-lg text-2xl font-bold hover:bg-green-400 transition-all"
-          >
-            Start Quiz
-          </button>
-        </div>
-      ) : score === null ? (
-        // 📍 Quiz Page
-        <div className="w-full max-w-2xl bg-blue-900 p-6 rounded-2xl shadow-lg">
-          <div className="flex justify-between mb-4">
-            <p className="text-lg">👤 {username}</p>
-            <p className="text-lg">
-              Time Left: {Math.floor(timeLeft / 60)}m {timeLeft % 60}s
-            </p>
-          </div>
-          <h3 className="text-2xl mb-4">
-            Q{current + 1}. {questions[current].q}
-          </h3>
-          <div className="space-y-3">
-            {questions[current].options.map((opt, idx) => (
-              <button
-                key={idx}
-                onClick={() => handleOption(opt)}
-                className={`block w-full text-left px-4 py-2 rounded-lg border ${
-                  answers[current] === opt
-                    ? "bg-green-500"
-                    : "bg-blue-700 hover:bg-blue-600"
-                }`}
-              >
-                {String.fromCharCode(65 + idx)}. {opt}
-              </button>
-            ))}
-          </div>
+      <div className="flex justify-between w-full max-w-2xl mb-4">
+        <p className="text-lg">👤 {username}</p>
+        <p className="text-lg">
+          Time Left: {Math.floor(timeLeft / 60)}m {timeLeft % 60}s
+        </p>
+      </div>
 
-          <div className="flex justify-between mt-6">
+      <motion.div
+        className="bg-yellow-400 text-black px-4 py-2 rounded mb-6 text-lg font-semibold overflow-hidden whitespace-nowrap w-full text-center"
+        animate={{ x: ["100%", "-100%"] }}
+        transition={{ repeat: Infinity, duration: 10, ease: "linear" }}
+      >
+        ⚡ ಮಿನಿಮಮ್ 50 ಪ್ರಶ್ನೆಗಳಿಗೆ ಉತ್ತರ ಮಾಡಿದರೆ ನೀವು ಚೆನ್ನಾಗಿ ಓದುತ್ತೀರಿ ಎಂದರ್ಥ ⚡
+      </motion.div>
+
+      <div className="w-full max-w-2xl bg-blue-900 p-6 rounded-2xl shadow-lg">
+        <h3 className="text-2xl mb-4">
+          Q{current + 1}. {questions[current].q}
+        </h3>
+
+        <div className="space-y-3">
+          {questions[current].options.map((opt, idx) => (
             <button
-              onClick={() => setCurrent((c) => Math.max(0, c - 1))}
-              className="bg-gray-400 px-4 py-2 rounded-lg text-black"
+              key={idx}
+              onClick={() => handleOption(opt)}
+              className={`block w-full text-left px-4 py-2 rounded-lg border ${
+                answers[current] === opt
+                  ? "bg-green-500"
+                  : "bg-blue-700 hover:bg-blue-600"
+              }`}
             >
-              Prev
+              {String.fromCharCode(65 + idx)}. {opt}
             </button>
-            {current < questions.length - 1 ? (
-              <button
-                onClick={() => setCurrent((c) => Math.min(questions.length - 1, c + 1))}
-                className="bg-yellow-400 px-4 py-2 rounded-lg text-black"
-              >
-                Next
-              </button>
-            ) : (
-              <button
-                onClick={handleSubmit}
-                className="bg-green-500 px-4 py-2 rounded-lg text-black"
-              >
-                Submit Quiz
-              </button>
-            )}
-          </div>
+          ))}
         </div>
-      ) : (
-        // 📍 Result Page
-        <div className="bg-blue-900 p-6 rounded-2xl shadow-lg text-center">
-          <h2 className="text-3xl mb-4">Result / ಫಲಿತಾಂಶ</h2>
-          <p className="text-xl mb-2">Name: {username}</p>
-          <p className="text-xl mb-2">Marks: {score} / {questions.length}</p>
-          <p className="text-xl mb-2">Percentage: {percent}%</p>
-          {percent >= 50 ? (
-            <p className="text-green-400 text-2xl font-bold">
-              You are doing well! ನೀವು ಓಡುತ್ತಿದ್ದೀರಿ! 🎉
-            </p>
+
+        <div className="flex justify-between mt-6">
+          <button
+            onClick={() => setCurrent((c) => Math.max(0, c - 1))}
+            className="bg-gray-400 px-4 py-2 rounded-lg text-black"
+          >
+            Prev
+          </button>
+          {current < questions.length - 1 ? (
+            <button
+              onClick={() => setCurrent((c) => Math.min(questions.length - 1, c + 1))}
+              className="bg-yellow-400 px-4 py-2 rounded-lg text-black"
+            >
+              Next
+            </button>
           ) : (
-            <p className="text-red-400 text-2xl font-bold">
-              You are not studying well 😢 ನೀವು ಓದುತ್ತಿಲ್ಲ!
-            </p>
+            <button
+              onClick={handleSubmit}
+              className="bg-green-500 px-4 py-2 rounded-lg text-black"
+            >
+              Submit Quiz
+            </button>
           )}
-          <p className="mt-4 text-lg">ಧನ್ಯವಾದಗಳು / Thank you!</p>
         </div>
-      )}
+      </div>
     </div>
   );
 }
